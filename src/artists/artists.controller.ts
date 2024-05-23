@@ -31,6 +31,7 @@ export class ArtistsController {
     });
     return await artist.save();
   }
+  
   @Get()
   async getAll() {
     return await this.artistModel.find();
