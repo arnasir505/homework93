@@ -4,7 +4,7 @@ const rootPath = __dirname;
 
 const config = {
   rootPath,
-  publicPath: join(rootPath, 'public'),
+  publicPath: join(rootPath, '../', 'public'),
   mongoose: {
     db: 'mongodb://localhost/nest-spotify',
   },
