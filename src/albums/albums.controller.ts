@@ -1,8 +1,11 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
   Post,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -12,7 +15,6 @@ import { Model } from 'mongoose';
 import { Album, AlbumDocument } from 'src/schemas/album.schema';
 import { CreateAlbumDto } from './create-album.dto';
 import { multerOptions } from 'src/multer.config';
-import { extname } from 'path';
 
 @Controller('albums')
 export class AlbumsController {
@@ -21,7 +23,7 @@ export class AlbumsController {
   ) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('image', multerOptions))
+  @UseInterceptors(FileInterceptor('image', { storage: multerOptions.storage }))
   async create(
     @UploadedFile() file: Express.Multer.File,
     @Body() albumDto: CreateAlbumDto,
@@ -30,15 +32,26 @@ export class AlbumsController {
       title: albumDto.title,
       artist: albumDto.artist,
       year: albumDto.year,
-      image: file
-        ? '/images/' + file.filename + extname(file.originalname)
-        : null,
+      image: file ? file.filename : null,
     });
     return await album.save();
   }
 
   @Get()
-  async getAll() {
+  async getAll(@Query('artist') artistId: string) {
+    if (artistId) {
+      return await this.albumModel.find({ artist: artistId });
+    }
     return await this.albumModel.find();
+  }
+
+  @Get('/:id')
+  async getOne(@Param('id') id: string) {
+    return await this.albumModel.findById(id);
+  }
+
+  @Delete('/:id')
+  async deleteOne(@Param('id') id: string) {
+    return await this.albumModel.findByIdAndDelete(id);
   }
 }

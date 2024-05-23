@@ -13,7 +13,7 @@ export const multerOptions = {
     },
     filename(_req, file, callback) {
       const extension = extname(file.originalname);
-      callback(null, 'images/' + randomUUID() + extension);
+      callback(null, 'images/' + randomUUID() + '.jpg');
     },
   }),
 };

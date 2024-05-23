@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -31,9 +33,19 @@ export class ArtistsController {
     });
     return await artist.save();
   }
-  
+
   @Get()
   async getAll() {
-    return await this.artistModel.find();
+    return await this.artistModel.find({}, { information: 0 });
+  }
+
+  @Get('/:id')
+  async getOne(@Param('id') id: string) {
+    return await this.artistModel.findById(id);
+  }
+
+  @Delete('/:id')
+  async deleteOne(@Param('id') id: string) {
+    return await this.artistModel.findByIdAndDelete(id);
   }
 }
