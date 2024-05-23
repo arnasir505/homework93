@@ -11,6 +11,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Model } from 'mongoose';
 import { Album, AlbumDocument } from 'src/schemas/album.schema';
 import { CreateAlbumDto } from './create-album.dto';
+import { multerOptions } from 'src/multer.config';
+import { extname } from 'path';
 
 @Controller('albums')
 export class AlbumsController {
@@ -19,7 +21,7 @@ export class AlbumsController {
   ) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('image', { dest: './public/images' }))
+  @UseInterceptors(FileInterceptor('image', multerOptions))
   async create(
     @UploadedFile() file: Express.Multer.File,
     @Body() albumDto: CreateAlbumDto,
@@ -28,13 +30,15 @@ export class AlbumsController {
       title: albumDto.title,
       artist: albumDto.artist,
       year: albumDto.year,
-      image: file ? '/images/' + file.filename : null,
+      image: file
+        ? '/images/' + file.filename + extname(file.originalname)
+        : null,
     });
     return await album.save();
   }
 
   @Get()
   async getAll() {
-    return await this.albumModel.find()
+    return await this.albumModel.find();
   }
 }

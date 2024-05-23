@@ -6,10 +6,11 @@ import { ArtistsController } from './artists/artists.controller';
 import { Artist, ArtistSchema } from './schemas/artist.schema';
 import { AlbumsController } from './albums/albums.controller';
 import { Album, AlbumSchema } from './schemas/album.schema';
+import config from './config';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost/nest-spotify'),
+    MongooseModule.forRoot(config.mongoose.db),
     MongooseModule.forFeature([
       { name: Artist.name, schema: ArtistSchema },
       { name: Album.name, schema: AlbumSchema },
