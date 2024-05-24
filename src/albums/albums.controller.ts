@@ -21,7 +21,7 @@ import { extname, resolve } from 'path';
 import { randomUUID } from 'crypto';
 import config from 'src/config';
 import { promises as fs } from 'fs';
-import { clearImage } from 'src/multer.config';
+import { clearImage } from 'src/multer';
 
 @Controller('albums')
 export class AlbumsController {
