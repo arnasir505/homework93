@@ -1,14 +1,16 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Post,
   Query,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { Track, TrackDocument } from 'src/schemas/track.schema';
 import { CreateTrackDto } from './create-track.dto';
 
@@ -20,26 +22,48 @@ export class TracksController {
 
   @Post()
   async create(@Body() trackDto: CreateTrackDto) {
-    const track = new this.trackModel({
-      title: trackDto.title,
-      album: trackDto.album,
-      duration: trackDto.duration,
-      position: trackDto.position,
-    });
-
-    return await track.save();
+    try {
+      const track = new this.trackModel({
+        title: trackDto.title,
+        album: trackDto.album,
+        duration: trackDto.duration,
+        position: Number(trackDto.position),
+      });
+      return await track.save();
+    } catch (e) {
+      if (e instanceof mongoose.Error.ValidationError) {
+        throw new BadRequestException(e);
+      }
+      return e;
+    }
   }
 
   @Get()
   async getAll(@Query('album') albumId: string) {
-    if (albumId) {
-      return await this.trackModel.find({ album: albumId });
+    try {
+      if (albumId) {
+        return await this.trackModel.find({ album: albumId });
+      }
+      return await this.trackModel.find();
+    } catch (e) {
+      throw e;
     }
-    return await this.trackModel.find();
   }
 
   @Delete('/:id')
   async deleteOne(@Param('id') id: string) {
-    return await this.trackModel.findByIdAndDelete(id);
+    try {
+      const track = await this.trackModel.findById(id);
+      if (!track) {
+        throw new NotFoundException('Track not found.');
+      }
+      await track.deleteOne();
+      return { message: 'Track delete successful.' };
+    } catch (e) {
+      if (e.name === 'CastError') {
+        throw new BadRequestException('Invalid track id!');
+      }
+      throw e;
+    }
   }
 }
