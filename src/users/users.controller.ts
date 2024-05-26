@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Post, Req, UnprocessableEntityException, UseGuards } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model, mongo } from 'mongoose';
 import { User, UserDocument } from 'src/schemas/user.schema';
 import { CreateUserDto } from './create-user.dto';
 import { Request } from 'express';
@@ -15,20 +15,35 @@ export class UsersController {
 
   @Post()
   async registerUser(@Body() createUserDto: CreateUserDto) {
-    const user = new this.userModel({
-      email: createUserDto.email,
-      password: createUserDto.password,
-      displayName: createUserDto.displayName,
-    });
-    user.generateToken();
-    await user.save();
-    return user;
+    try {
+      const user = new this.userModel({
+        email: createUserDto.email,
+        password: createUserDto.password,
+        displayName: createUserDto.displayName,
+      });
+      user.generateToken();
+      await user.save();
+      return user;
+    } catch (e) {
+      if (e instanceof mongoose.Error.ValidationError) {
+        throw new BadRequestException(e);
+      }
+      if (e instanceof mongo.MongoServerError && e.code === 11000) {
+        throw new UnprocessableEntityException('This email is already taken.');
+      }
+      return e;
+    }
   }
 
   @UseGuards(AuthGuard('local'))
   @Post('sessions')
   async loginUser(@Req() req: Request) {
     return req.user;
+  }
+
+  @Get()
+  async getAll() {
+    return this.userModel.find();
   }
 
   @UseGuards(TokenAuthGuard)
