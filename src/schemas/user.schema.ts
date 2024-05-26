@@ -21,6 +21,9 @@ export class User {
   @Prop()
   displayName: string;
 
+  @Prop({ required: true, enum: ['admin', 'user'], default: 'user' })
+  role: string;
+
   @Prop({ required: true })
   token: string;
 }

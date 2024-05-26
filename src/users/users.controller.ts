@@ -1,4 +1,14 @@
-import { BadRequestException, Body, Controller, Get, Post, Req, UnprocessableEntityException, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Post,
+  Req,
+  UnprocessableEntityException,
+  UseGuards,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model, mongo } from 'mongoose';
 import { User, UserDocument } from 'src/schemas/user.schema';
@@ -50,5 +60,32 @@ export class UsersController {
   @Get('secret')
   async secret(@Req() req: Request) {
     return req.user;
+  }
+
+  @Delete('sessions')
+  async logoutUser(@Req() req: Request) {
+    try {
+      const headerValue = req.get('Authorization');
+      const successMessage = { message: 'Successful log out' };
+
+      if (!headerValue) {
+        return successMessage;
+      }
+
+      const [_, token] = headerValue.split(' ');
+
+      const user = await this.userModel.findOne({ token });
+
+      if (!user) {
+        return successMessage;
+      }
+
+      user.generateToken();
+      await user.save();
+
+      return successMessage;
+    } catch (e) {
+      throw e;
+    }
   }
 }
