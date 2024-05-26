@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-@Schema({versionKey: false})
+@Schema({ versionKey: false })
 export class Artist {
   @Prop({ required: true, unique: true })
   name: string;
