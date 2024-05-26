@@ -14,6 +14,8 @@ import { User, UserSchema } from './schemas/user.schema';
 import { AuthService } from './auth/auth.service';
 import { LocalStrategy } from './auth/local.strategy';
 import { PassportModule } from '@nestjs/passport';
+import { APP_GUARD } from '@nestjs/core';
+import { PermitGuard } from './permit/permit.guard';
 
 @Module({
   imports: [
@@ -24,7 +26,7 @@ import { PassportModule } from '@nestjs/passport';
       { name: Track.name, schema: TrackSchema },
       { name: User.name, schema: UserSchema },
     ]),
-    PassportModule
+    PassportModule,
   ],
   controllers: [
     AppController,
@@ -33,6 +35,11 @@ import { PassportModule } from '@nestjs/passport';
     TracksController,
     UsersController,
   ],
-  providers: [AppService, AuthService, LocalStrategy],
+  providers: [
+    AppService,
+    AuthService,
+    LocalStrategy,
+    { provide: APP_GUARD, useClass: PermitGuard },
+  ],
 })
 export class AppModule {}

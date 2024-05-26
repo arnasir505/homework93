@@ -1,4 +1,10 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from 'src/schemas/user.schema';
@@ -14,19 +20,15 @@ export class TokenAuthGuard implements CanActivate {
     const headerValue = request.get('Authorization');
 
     if (!headerValue) {
-      return false;
+      throw new BadRequestException('Token not provided!');
     }
 
     const [_, token] = headerValue.split(' ');
 
-    if (!token) {
-      return false;
-    }
-
     const user = await this.userModel.findOne({ token: token });
 
     if (!user) {
-      return false;
+      throw new UnauthorizedException('Invalid token!');
     }
 
     request.user = user;

@@ -9,6 +9,7 @@ import {
   Post,
   Query,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -22,6 +23,7 @@ import { randomUUID } from 'crypto';
 import config from 'src/config';
 import { promises as fs } from 'fs';
 import { clearImage } from 'src/multer';
+import { TokenAuthGuard } from 'src/auth/token-auth.guard';
 
 @Controller('albums')
 export class AlbumsController {
@@ -29,6 +31,7 @@ export class AlbumsController {
     @InjectModel(Album.name) private albumModel: Model<AlbumDocument>,
   ) {}
 
+  @UseGuards(TokenAuthGuard)
   @Post()
   @UseInterceptors(
     FileInterceptor('image', {

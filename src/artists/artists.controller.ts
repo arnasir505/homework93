@@ -9,6 +9,7 @@ import {
   Post,
   UnprocessableEntityException,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -22,6 +23,9 @@ import { extname, resolve } from 'path';
 import config from 'src/config';
 import { promises as fs } from 'fs';
 import { clearImage } from 'src/multer';
+import { TokenAuthGuard } from 'src/auth/token-auth.guard';
+import { Roles } from 'src/roles.decorator';
+import { Role } from 'src/role.enum';
 
 @Controller('artists')
 export class ArtistsController {
@@ -29,6 +33,7 @@ export class ArtistsController {
     @InjectModel(Artist.name) private artistModel: Model<ArtistDocument>,
   ) {}
 
+  @UseGuards(TokenAuthGuard)
   @Post()
   @UseInterceptors(
     FileInterceptor('image', {
@@ -95,7 +100,9 @@ export class ArtistsController {
     }
   }
 
+  @UseGuards(TokenAuthGuard)
   @Delete('/:id')
+  @Roles(Role.Admin)
   async deleteOne(@Param('id') id: string) {
     try {
       const artist = await this.artistModel.findById(id);
