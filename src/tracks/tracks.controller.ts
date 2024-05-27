@@ -15,6 +15,8 @@ import mongoose, { Model } from 'mongoose';
 import { Track, TrackDocument } from 'src/schemas/track.schema';
 import { CreateTrackDto } from './create-track.dto';
 import { TokenAuthGuard } from 'src/auth/token-auth.guard';
+import { Role } from 'src/role.enum';
+import { Roles } from 'src/roles.decorator';
 
 @Controller('tracks')
 export class TracksController {
@@ -53,6 +55,8 @@ export class TracksController {
     }
   }
 
+  @UseGuards(TokenAuthGuard)
+  @Roles(Role.Admin)
   @Delete('/:id')
   async deleteOne(@Param('id') id: string) {
     try {

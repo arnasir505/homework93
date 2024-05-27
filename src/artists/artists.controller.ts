@@ -101,8 +101,8 @@ export class ArtistsController {
   }
 
   @UseGuards(TokenAuthGuard)
-  @Delete('/:id')
   @Roles(Role.Admin)
+  @Delete('/:id')
   async deleteOne(@Param('id') id: string) {
     try {
       const artist = await this.artistModel.findById(id);

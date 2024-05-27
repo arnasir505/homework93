@@ -3,7 +3,6 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
   Post,
   Req,
   UnprocessableEntityException,
@@ -15,7 +14,6 @@ import { User, UserDocument } from 'src/schemas/user.schema';
 import { CreateUserDto } from './create-user.dto';
 import { Request } from 'express';
 import { AuthGuard } from '@nestjs/passport';
-import { TokenAuthGuard } from 'src/auth/token-auth.guard';
 
 @Controller('users')
 export class UsersController {
@@ -48,17 +46,6 @@ export class UsersController {
   @UseGuards(AuthGuard('local'))
   @Post('sessions')
   async loginUser(@Req() req: Request) {
-    return req.user;
-  }
-
-  @Get()
-  async getAll() {
-    return this.userModel.find();
-  }
-
-  @UseGuards(TokenAuthGuard)
-  @Get('secret')
-  async secret(@Req() req: Request) {
     return req.user;
   }
 

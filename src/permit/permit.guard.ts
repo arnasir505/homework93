@@ -1,15 +1,25 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Observable } from 'rxjs';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { Role } from 'src/role.enum';
 import { ROLES_KEY } from 'src/roles.decorator';
+import { User, UserDocument } from 'src/schemas/user.schema';
 
 @Injectable()
 export class PermitGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  constructor(
+    private reflector: Reflector,
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+  ) {}
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -19,15 +29,25 @@ export class PermitGuard implements CanActivate {
       return true;
     }
 
-    const { user } = context.switchToHttp().getRequest();
-    console.log(user)
-    if (!user) {
-      return false;
+    const request = context.switchToHttp().getRequest();
+    const headerValue = request.get('Authorization');
+
+    if (!headerValue) {
+      throw new BadRequestException('Token not provided!');
     }
 
-    if (!requiredRoles.includes(user.role)) {
-      return false;
+    const [_, token] = headerValue.split(' ');
+
+    const user = await this.userModel.findOne({ token: token });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid token!');
     }
+
+    if (!Object.values(requiredRoles).includes(user.role as Role)) {
+      throw new ForbiddenException('Permission denied.');
+    }
+
     return true;
   }
 }

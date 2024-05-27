@@ -24,6 +24,8 @@ import config from 'src/config';
 import { promises as fs } from 'fs';
 import { clearImage } from 'src/multer';
 import { TokenAuthGuard } from 'src/auth/token-auth.guard';
+import { Roles } from 'src/roles.decorator';
+import { Role } from 'src/role.enum';
 
 @Controller('albums')
 export class AlbumsController {
@@ -99,6 +101,8 @@ export class AlbumsController {
     }
   }
 
+  @UseGuards(TokenAuthGuard)
+  @Roles(Role.Admin)
   @Delete('/:id')
   async deleteOne(@Param('id') id: string) {
     try {
